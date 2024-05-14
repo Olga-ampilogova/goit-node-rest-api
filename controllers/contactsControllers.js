@@ -1,19 +1,9 @@
 import { createContactSchema, updateContactSchema, idSchema } from "../schemas/contactsSchemas.js";
-import crypto from "node:crypto";
-import {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  changeContact
-} from "../services/contactsServices.js";
- import Contact from "../models/contacts.js"
-//import { func } from "joi";
+import Contact from "../models/contacts.js"
 
 export async  function getAllContacts (req, res, next)  {
   try {
     const contacts = await Contact.find()
-    // const contacts = await listContacts();
     res.status(200).json(contacts);
   } catch (error) {
     console.error("Error fetching contacts:", error);
@@ -21,28 +11,23 @@ export async  function getAllContacts (req, res, next)  {
   }
 };
 
-export async function getOneContact (req, res)  {
+export async function getOneContact(req, res) {
   try {
     const { id } = req.params;
     const { error: idError } = idSchema.validate(id);
-      if (idError) {
-       return res.status(404).json({ message: "Not found" });
-     }
+    if (idError) {
+      return res.status(404).json({ message: "Not found" });
+    }
     const contact = await Contact.findById(id);
-    console.log(contact);
     if (contact) {
       res.status(200).json(contact);
     } else {
       res.status(404).json({ message: "Not found" });
     }
   } catch (error) {
-    if (error.name === "CastError" && error.kind === "ObjectId") {
-      res.status(404).json({ message: "Not found" });
-    } else {
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  }
-};
+     res.status(500).json({ error: "Internal Server Error" });
+  };
+}
 
 export async function deleteContact (req, res) {
   try {
@@ -63,11 +48,8 @@ export async function deleteContact (req, res) {
   }
 };
 
-
 export async function createContact(req, res, next) {
-  
   try {
-  
     const contact = {
       name: req.body.name,
       email: req.body.email,
@@ -83,28 +65,9 @@ export async function createContact(req, res, next) {
     console.log(result);
     res.status(201).json(contact);
   } catch (error) {
-    if (error.name === "CastError" && error.kind === "ObjectId") {
-      res.status(404).json({ message: "Not found" });
-    } else {
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-      //    console.error("Error creating contact:", error);
-      // res.status(500).json({ error: "Internal Server Error" });
+     res.status(500).json({ error: "Internal Server Error" });
   }
 }
-    // const { error} = createContactSchema.validate(contact, {
-    //   convert: false,
-    // });
-    // if (typeof error !== "undefined") {
-    //  return res.status(400).json({message:error.message})
-    // }
-//     const newContact = await addContact(contact)
-//     res.status(201).json(newContact)
-//   } catch (error) {
-//         console.error("Error creating contact:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
 
 
 export async function updateContact (req, res) {
@@ -157,7 +120,6 @@ export async function updateStatusContact(req, res) {
     );
     if (!updatedField) {
       return res.status(404).json({ message: "Not found" });
-      
     }
     res.status(200).json(updatedField);
   } catch (error) {

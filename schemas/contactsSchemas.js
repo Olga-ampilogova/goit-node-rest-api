@@ -14,7 +14,6 @@ export const updateContactSchema = Joi.object({
 
 export const idSchema = Joi.string().length(24).hex();
 
-// Example usage:
 const { error, value } = idSchema.validate("664276135f690ae8d6ef4f19");
 if (error) {
   console.error("Validation error:", error);
@@ -23,13 +22,4 @@ if (error) {
 }
 
 
-// Define a schema for your IDs
-// export const idSchema = Joi.string().alphanum().length(10);
 
-// // Example usage:
-// const { error, value } = idSchema.validate("123abc4567");
-// if (error) {
-//   console.error("Validation error:", error);
-// } else {
-//   console.log("Valid ID:", value);
-// }
