@@ -12,14 +12,10 @@ export const updateContactSchema = Joi.object({
   phone: Joi.string().optional(),
 });
 
-export const idSchema = Joi.string().length(24).hex();
-
-const { error, value } = idSchema.validate("664276135f690ae8d6ef4f19");
-if (error) {
-  console.error("Validation error:", error);
-} else {
-  console.log("Valid ID:", value);
-}
-
+export const updateFavoriteField = Joi.object(
+  {
+    favorite: Joi.boolean().required()
+  }
+)
 
 
