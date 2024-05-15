@@ -22,6 +22,6 @@ contactsRouter.post("/", createContact);
 
 contactsRouter.put(`${BASE_URL}/:id`, updateContact);
 
-contactsRouter.patch("`${BASE_URL}/:id/favorite`", updateStatusContact);
+contactsRouter.patch(`${BASE_URL}/:id/favorite`, updateStatusContact);
 
 export default contactsRouter;
