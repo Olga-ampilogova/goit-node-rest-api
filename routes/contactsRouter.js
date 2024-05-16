@@ -10,18 +10,16 @@ import {
 
 const contactsRouter = express.Router();
 
-const BASE_URL = "/api/contacts";
+contactsRouter.get("/", getAllContacts);
 
-contactsRouter.get(`${BASE_URL}/`, getAllContacts);
+contactsRouter.get("/:id", getOneContact);
 
-contactsRouter.get(`${BASE_URL}/:id`, getOneContact);
-
-contactsRouter.delete(`${BASE_URL}/:id`, deleteContact);
+contactsRouter.delete("/:id", deleteContact);
 
 contactsRouter.post("/", createContact);
 
-contactsRouter.put(`${BASE_URL}/:id`, updateContact);
+contactsRouter.put("/:id", updateContact);
 
-contactsRouter.patch(`${BASE_URL}/:id/favorite`, updateStatusContact);
+contactsRouter.patch("/:id/favorite", updateStatusContact);
 
 export default contactsRouter;
