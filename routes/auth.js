@@ -11,6 +11,7 @@ const BASE_URL = "/api/auth";
 userRouter.post( "/register",validateBody(createUserSchema),authController.register);
 userRouter.post("/login", validateBody(authUserSchema), authController.login);
 userRouter.get("/logout", authMiddleWare, authController.logout);
-userRouter.get("/current", authMiddleWare,  authController.current);
+userRouter.get("/current", authMiddleWare, authController.current);
+userRouter.patch("/users", authMiddleWare, authController.update)
 
 export default userRouter;

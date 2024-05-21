@@ -3,10 +3,28 @@ import Contact from "../models/contacts.js"
 import mongoose from "mongoose";
 
 export async function getAllContacts(req, res, next) {
-  console.log({user: req.user});
+  // console.log({user: req.user});
+   const page = parseInt(req.query.page) || 1;
+   const limit = parseInt(req.query.limit) || 20;
+  const skip = (page - 1) * limit;
+  
+  const filter = { ownerId: req.user.id };
+     if (req.query.favorite !== undefined) {
+       if (req.query.favorite === "true") {
+         filter.favorite = true;
+       }
+      
+     }
   try {
-    const contacts = await Contact.find({ownerId: req.user.id})
-    res.status(200).json(contacts);
+    const contacts = await Contact.find(filter)
+      .skip(skip)
+      .limit(limit);
+        res.status(200).json({
+          page,
+          limit,
+          totalCount: await Contact.countDocuments(filter),
+          data: contacts,
+        });
   } catch (error) {
     console.error("Error fetching contacts:", error);
     res.status(500).json({ error: "Internal Server Error" });

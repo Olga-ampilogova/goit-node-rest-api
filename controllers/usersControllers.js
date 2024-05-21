@@ -1,4 +1,3 @@
-//import User from "../controllers/usersControllers.js";
 import { createUserSchema } from "../schemas/usersSchemas.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -12,18 +11,15 @@ async function register(req, res, next) {
     email: req.body.email.toLowerCase(),
     password: req.body.password,
   };
- // const { error } = createUserSchema.validate(user, { convert: false });
 
   try {
     const existUser = await User.findOne({ email: req.body.email });
     if (existUser !== null) {
-      // res.status(409).json("The user already exists!");
       throw HttpError(409, "Email in use");
     }
     const passwordHash = await bcrypt.hash(password, 10);
 
     const result = await User.create({ name, email, password: passwordHash });
-    //console.log(result);
     res.status(201, "Created").json(result);
   } catch (error) {
     next(error);
@@ -36,8 +32,6 @@ async function login(req, res, next) {
     email: req.body.email.toLowerCase(),
     password: req.body.password,
   };
-  const { error } = createUserSchema.validate(user, { convert: false });
-
   try {
     const user = await User.findOne({ email: req.body.email });
     if (user === null) {
@@ -75,20 +69,37 @@ async function current(req, res, next) {
      if (token===null) {
        return next(HttpError(401, "Not authorized"));
      }
-
      try {
        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-       const user = await User.findById(decoded.id).select(
-         "email subscription"
-       );
-
+       const user = await User.findById(decoded.id)
        if (!user) {
          return next(HttpError(401, "Not authorized"));
        }
-
        res.status(200).json(user);
      } catch (error) {
        next(error);
      }
+}
+async function update(req, res, next) {
+  const { subscription } = req.body;
+    if (!subscription.includes(subscription)) {
+      return next(HttpError(400, "Invalid subscription value"));
   }
-export default { register, login, logout, current};
+  try {
+     const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { subscription },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return next(HttpError(404, "User not found"));
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error)
+  }
+}
+
+export default { register, login, logout, current, update};
