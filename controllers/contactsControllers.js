@@ -2,9 +2,10 @@ import { createContactSchema, updateContactSchema, updateFavoriteField } from ".
 import Contact from "../models/contacts.js"
 import mongoose from "mongoose";
 
-export async  function getAllContacts (req, res, next)  {
+export async function getAllContacts(req, res, next) {
+  console.log({user: req.user});
   try {
-    const contacts = await Contact.find()
+    const contacts = await Contact.find({ownerId: req.user.id})
     res.status(200).json(contacts);
   } catch (error) {
     console.error("Error fetching contacts:", error);
@@ -15,15 +16,15 @@ export async  function getAllContacts (req, res, next)  {
 export async function getOneContact(req, res) {
   try {
     const { id } = req.params;
-     if (!mongoose.isValidObjectId(id)) {
-       return res.status(404).json({ message: "Not found" });
-     }
-    const contact = await Contact.findById(id);
-    if (contact) {
-      res.status(200).json(contact);
-    } else {
-      res.status(404).json({ message: "Not found" });
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(404).json({ message: "Not found" });
     }
+
+    const contact = await Contact.findOne({ _id: id, ownerId: req.user.id });
+    if (contact === null) {
+      return res.status(404).json({ message: "Not found" });
+    }
+    res.status(200).json(contact);
   } catch (error) {
      res.status(500).json({ error: "Internal Server Error" });
   };
@@ -35,31 +36,30 @@ export async function deleteContact (req, res) {
      if (!mongoose.isValidObjectId(id)) {
        return res.status(404).json({ message: "Not found" });
      }
-    const contact = await Contact.findByIdAndDelete(id)
+    const contact = await Contact.findOneAndDelete({ _id:id, ownerId: req.user.id })
+    console.log(contact);
     if (contact) {
       res.status(200).json(contact);
     } else {
       res.status(404).json({ message: "Not found" });
     }
   } catch (error) {
-    console.log();
+     console.error("Error deleting contact:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 export async function createContact(req, res, next) {
+  console.log(req.user);
   try {
     const contact = {
       name: req.body.name,
       email: req.body.email,
       phone: req.body.phone,
+      favorite: req.body.favorite,
+      ownerId: req.user.id
     };
-      const { error } = createContactSchema.validate(contact, {
-        convert: false,
-      });
-      if (typeof error !== "undefined") {
-        return res.status(400).json({ message: error.message });
-      }
+    
     const result = await Contact.create(contact);
     console.log(result);
     res.status(201).json(result);
@@ -67,7 +67,6 @@ export async function createContact(req, res, next) {
      res.status(500).json({ error: "Internal Server Error" });
   }
 }
-
 
 export async function updateContact (req, res) {
   try {
@@ -80,16 +79,11 @@ export async function updateContact (req, res) {
         .json({ message: "Body must have at least one field" });
     }
 
-    const { error } = updateContactSchema.validate(updatedFields, {
-      convert: false,
-    });
-    if (error) {
-      return res.status(400).json({ message: error.message });
-    }
+  
      if (!mongoose.isValidObjectId(id)) {
        return res.status(404).json({ message: "Not found" });
      }
-    const updatedContact = await Contact.findByIdAndUpdate(id, updatedFields, {new:true})
+  const updatedContact = await Contact.findOneAndUpdate({_id: id, ownerId: req.user.id}, updatedFields, {new:true})
 
     if (!updatedContact) {
       return res.status(404).json({ message: "Not found" });
@@ -118,8 +112,8 @@ export async function updateStatusContact(req, res) {
       return res.status(404).json({ message: "Not found" });
     }
 
-    const updatedField = await Contact.findByIdAndUpdate(
-      id,
+    const updatedField = await Contact.findOneAndUpdate(
+   {_id:id, ownerId: req.user.id },
       { favorite },
       { new: true }
     );
