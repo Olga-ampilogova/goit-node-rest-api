@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/contacts", authMiddleWare,  contactsRouter);
-app.use("/api/auth", userRouter);
+app.use("/users", userRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });

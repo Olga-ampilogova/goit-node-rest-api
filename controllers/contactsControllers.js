@@ -3,17 +3,14 @@ import Contact from "../models/contacts.js"
 import mongoose from "mongoose";
 
 export async function getAllContacts(req, res, next) {
-  // console.log({user: req.user});
    const page = parseInt(req.query.page) || 1;
    const limit = parseInt(req.query.limit) || 20;
   const skip = (page - 1) * limit;
-  
   const filter = { ownerId: req.user.id };
      if (req.query.favorite !== undefined) {
        if (req.query.favorite === "true") {
          filter.favorite = true;
        }
-      
      }
   try {
     const contacts = await Contact.find(filter)
@@ -77,7 +74,6 @@ export async function createContact(req, res, next) {
       favorite: req.body.favorite,
       ownerId: req.user.id
     };
-    
     const result = await Contact.create(contact);
     console.log(result);
     res.status(201).json(result);
@@ -96,8 +92,6 @@ export async function updateContact (req, res) {
         .status(400)
         .json({ message: "Body must have at least one field" });
     }
-
-  
      if (!mongoose.isValidObjectId(id)) {
        return res.status(404).json({ message: "Not found" });
      }

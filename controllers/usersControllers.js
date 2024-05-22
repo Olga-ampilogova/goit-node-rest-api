@@ -5,9 +5,8 @@ import { User } from "../models/users.js"
 import HttpError from "../helpers/HttpError.js"
 
 async function register(req, res, next) {
-  const { name, email, password } = req.body;
+  const { email, password } = req.body;
   const user = {
-    name: req.body.name,
     email: req.body.email.toLowerCase(),
     password: req.body.password,
   };
@@ -18,9 +17,14 @@ async function register(req, res, next) {
       throw HttpError(409, "Email in use");
     }
     const passwordHash = await bcrypt.hash(password, 10);
-
-    const result = await User.create({ name, email, password: passwordHash });
-    res.status(201, "Created").json(result);
+    const result = await User.create({ email, password: passwordHash });
+        const response = {
+      user: {
+        email: result.email,
+        subscription: result.subscription,
+      }
+    };
+    res.status(201, "Created").json(response);
   } catch (error) {
     next(error);
   }
@@ -32,24 +36,34 @@ async function login(req, res, next) {
     email: req.body.email.toLowerCase(),
     password: req.body.password,
   };
+  const lowerCaseEmail = email.toLowerCase();
   try {
-    const user = await User.findOne({ email: req.body.email });
-    if (user === null) {
-     throw HttpError(401)
+    const userInUse = await User.findOne({  email: lowerCaseEmail });
+    if (userInUse === null) {
+                return res
+                  .status(401)
+                  .send({ message: "Email or password is wrong" });
     }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (isMatch === false) {
-      console.log("Password");
-      return res.status(401).send({ message: "Email or password is incorrect" });
+    const isMatch = await bcrypt.compare(password, userInUse.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Email or password is wrong" });
     }
 
     const token = jwt.sign(
-       { id: user._id },
+       { id: userInUse._id },
       process.env.JWT_SECRET,
       { expiresIn: 60 * 60 }
     );
-    await User.findByIdAndUpdate(user._id, { token });
-    res.send({token});
+    await User.findByIdAndUpdate(userInUse._id, { token });
+
+     const response = {
+       token,
+       user: {
+         email: userInUse.email,
+         subscription: userInUse.subscription,
+       },
+     };
+    res.json(response);
   } catch (error) {
     next(error);
   }
@@ -66,24 +80,29 @@ async function logout(req, res, next) {
 
 async function current(req, res, next) {
      const token = req.headers.authorization?.split(" ")[1];
-     if (token===null) {
-       return next(HttpError(401, "Not authorized"));
+     if (!token) {
+       throw HttpError(401, "Not authorized");
      }
      try {
        const decoded = jwt.verify(token, process.env.JWT_SECRET);
        const user = await User.findById(decoded.id)
        if (!user) {
-         return next(HttpError(401, "Not authorized"));
+         throw HttpError(401, "Not authorized");
+
        }
-       res.status(200).json(user);
+       const response = {
+         email: user.email,
+         subscription: user.subscription,
+       }
+       res.status(200).json(response);
      } catch (error) {
        next(error);
      }
 }
 async function update(req, res, next) {
   const { subscription } = req.body;
-    if (!subscription.includes(subscription)) {
-      return next(HttpError(400, "Invalid subscription value"));
+  if (!subscription.includes(subscription)) {
+      throw HttpError(400, "Invalid subscription value");
   }
   try {
      const updatedUser = await User.findByIdAndUpdate(
@@ -93,7 +112,7 @@ async function update(req, res, next) {
     );
 
     if (!updatedUser) {
-      return next(HttpError(404, "User not found"));
+      throw HttpError(404, "User not found");
     }
 
     res.status(200).json(updatedUser);
