@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/users.js"
 import HttpError from "../helpers/HttpError.js"
 import gravatar from "gravatar";
-import request from "supertest";
 
 
 
