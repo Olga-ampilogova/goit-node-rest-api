@@ -10,14 +10,10 @@ async function getAvatar(req, res, next) {
       if (!userAvatar) {
         throw HttpError(404, "User not found");
     }
-      if (userAvatar.avatarURL=== undefined) {
+      if (!userAvatar.avatarURL) {
         throw HttpError(404, "Avatar not found");
       }
-      const pathResolve = res.sendFile(path.resolve("public/avatars", userAvatar.avatarURL), (error) => {
-          if (error) {
-              throw HttpError(404, "Avatar not found");
-          }
-      });
+    res.sendFile(path.resolve("public/avatars", userAvatar.avatarURL));
   } catch (error) {
     next(error);
   }
