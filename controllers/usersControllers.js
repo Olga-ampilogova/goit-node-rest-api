@@ -3,6 +3,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../models/users.js"
 import HttpError from "../helpers/HttpError.js"
+import gravatar from "gravatar";
+
+
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -17,12 +20,19 @@ async function register(req, res, next) {
       throw HttpError(409, "Email in use");
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    const result = await User.create({ email, password: passwordHash });
-        const response = {
+    const avatarURL = gravatar.url(email, { s: "200", r: "pg", d: "mm" });
+
+    const result = await User.create({
+      email,
+      password: passwordHash,
+      avatarURL,
+    });
+    const response = {
       user: {
         email: result.email,
         subscription: result.subscription,
-      }
+        avatarURL: result.avatarURL,
+      },
     };
     res.status(201, "Created").json(response);
   } catch (error) {
