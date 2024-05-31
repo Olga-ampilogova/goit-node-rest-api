@@ -1,6 +1,4 @@
-import {Schema, model} from "mongoose";
-
-
+import { Schema, model } from "mongoose";
 
 const userSchema = new Schema(
   {
@@ -25,6 +23,14 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      required: [true, "Verify token is required"],
+    },
   },
   {
     versionKey: false,
@@ -32,4 +38,4 @@ const userSchema = new Schema(
   }
 );
 
-export  const User = model("user", userSchema);
+export const User = model("user", userSchema);

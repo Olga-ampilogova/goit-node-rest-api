@@ -22,11 +22,11 @@ const contactSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-   },
+  },
   {
     versionKey: false,
     timestamps: true,
   }
 );
 
-export default mongoose.model("Contact", contactSchema)
+export default mongoose.model("Contact", contactSchema);
